@@ -157,6 +157,8 @@ int cam_mem_get_io_buf(int32_t buf_handle, int32_t mmu_handle,
 		return -EINVAL;
 	}
 
+	*len_ptr = 0;
+
 	idx = CAM_MEM_MGR_GET_HDL_IDX(buf_handle);
 	if (idx >= CAM_MEM_BUFQ_MAX || idx <= 0)
 		return -EINVAL;
@@ -180,9 +182,16 @@ int cam_mem_get_io_buf(int32_t buf_handle, int32_t mmu_handle,
 			tbl.bufq[idx].fd,
 			iova_ptr,
 			len_ptr);
-	if (rc < 0)
-		CAM_ERR(CAM_MEM, "fail to get buf hdl :%d", buf_handle);
+	if (rc) {
+		CAM_ERR(CAM_CRM,
+			"fail to map buf_hdl:0x%x, mmu_hdl: 0x%x for fd:%d",
+			buf_handle, mmu_handle, tbl.bufq[idx].fd);
+		goto handle_mismatch;
+	}
 
+	CAM_DBG(CAM_CRM,
+		"handle:0x%x fd:%d iova_ptr:%pK len_ptr:%llu",
+		mmu_handle, tbl.bufq[idx].fd, iova_ptr, *len_ptr);
 handle_mismatch:
 	mutex_unlock(&tbl.bufq[idx].q_lock);
 	return rc;
