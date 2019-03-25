@@ -53,6 +53,22 @@
 	qcom,lpi-gpios;
 };
 
+&wsa881x_0211 {
+	status = "disabled";
+};
+
+&wsa881x_0212 {
+	status = "disabled";
+};
+
+&wsa881x_0213 {
+	status = "disabled";
+};
+
+&wsa881x_0214 {
+	status = "disabled";
+};
+
 &soc {
 	sbu_uart_en: msm_cdc_pinctrl@49 {
 		#gpio-cells = <0>;
