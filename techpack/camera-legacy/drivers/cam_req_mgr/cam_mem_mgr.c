@@ -15,7 +15,6 @@
 #include <linux/mutex.h>
 #include <linux/msm_ion.h>
 #include <linux/slab.h>
-#include <asm/cacheflush.h>
 
 #include "cam_req_mgr_util.h"
 #include "cam_mem_mgr.h"

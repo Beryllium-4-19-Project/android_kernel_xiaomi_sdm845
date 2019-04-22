@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -13,7 +13,6 @@
 #ifndef _CAM_CDM_H_
 #define _CAM_CDM_H_
 
-#include <linux/dma-direction.h>
 #include <linux/module.h>
 #include <linux/of_platform.h>
 #include <linux/random.h>

@@ -10,6 +10,7 @@
  * GNU General Public License for more details.
  */
 
+#include <linux/dma-contiguous.h>
 #include "cam_sensor_spi.h"
 #include "cam_debug_util.h"
 

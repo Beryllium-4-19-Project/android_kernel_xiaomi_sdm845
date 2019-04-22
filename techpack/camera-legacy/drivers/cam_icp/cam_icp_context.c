@@ -16,7 +16,6 @@
 #include <linux/uaccess.h>
 #include <media/cam_sync.h>
 #include <media/cam_defs.h>
-#include "cam_sync_api.h"
 #include "cam_node.h"
 #include "cam_context.h"
 #include "cam_context_utils.h"

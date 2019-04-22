@@ -14,12 +14,10 @@
 #define _CAM_SENSOR_DEV_H_
 
 #include <linux/delay.h>
-#include <linux/clk.h>
 #include <linux/io.h>
 #include <linux/of.h>
 #include <linux/module.h>
 #include <linux/irqreturn.h>
-#include <linux/ion.h>
 #include <linux/iommu.h>
 #include <linux/timer.h>
 #include <linux/kernel.h>

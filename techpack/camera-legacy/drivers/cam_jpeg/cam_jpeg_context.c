@@ -16,7 +16,6 @@
 #include <linux/uaccess.h>
 
 #include "cam_mem_mgr.h"
-#include "cam_sync_api.h"
 #include "cam_jpeg_context.h"
 #include "cam_context_utils.h"
 #include "cam_debug_util.h"
