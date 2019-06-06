@@ -815,8 +815,8 @@ static int spss_parse_dt(struct device_node *node)
 	ret = of_property_read_u32(node, "qcom,spss-emul-type-reg-addr",
 			     &spss_emul_type_reg_addr);
 	if (ret < 0) {
-		pr_err("can't get spss-emulation-type-reg addr\n");
-		return -EINVAL;
+		pr_warn("can't get spss-emulation-type-reg addr\n");
+		goto out;
 	}
 
 	spss_emul_type_reg = ioremap_nocache(spss_emul_type_reg_addr,
