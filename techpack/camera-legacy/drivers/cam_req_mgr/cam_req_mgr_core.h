@@ -312,7 +312,8 @@ struct cam_req_mgr_connected_device {
  *                         to be serviced in the kernel.
  * @last_flush_id        : Last request to flush
  * @is_used              : 1 if link is in use else 0
- *
+ * @is_shutdown          : Flag to indicate if link needs to be disconnected
+ *                         as part of shutdown.
  */
 struct cam_req_mgr_core_link {
 	int32_t                              link_hdl;
@@ -338,6 +339,7 @@ struct cam_req_mgr_core_link {
 	int32_t                              open_req_cnt;
 	uint32_t                             last_flush_id;
 	atomic_t                             is_used;
+	bool                                 is_shutdown;
 };
 
 /**
@@ -390,11 +392,13 @@ int cam_req_mgr_create_session(struct cam_req_mgr_session_info *ses_info);
  * cam_req_mgr_destroy_session()
  * @brief    : destroy session
  * @ses_info : session handle info, input param
+ * @is_shutdown: To indicate if devices on link need to be disconnected.
  *
  * Called as part of session destroy
  * return success/failure
  */
-int cam_req_mgr_destroy_session(struct cam_req_mgr_session_info *ses_info);
+int cam_req_mgr_destroy_session(struct cam_req_mgr_session_info *ses_info,
+	bool is_shutdown);
 
 /**
  * cam_req_mgr_link()

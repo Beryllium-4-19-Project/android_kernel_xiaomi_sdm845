@@ -49,6 +49,7 @@ static void cam_req_mgr_core_link_reset(struct cam_req_mgr_core_link *link)
 	link->sync_link_sof_skip = false;
 	link->open_req_cnt = 0;
 	link->last_flush_id = 0;
+	link->is_shutdown = false;
 }
 
 void cam_req_mgr_handle_core_shutdown(void)
@@ -62,7 +63,7 @@ void cam_req_mgr_handle_core_shutdown(void)
 			&g_crm_core_dev->session_head, entry) {
 			ses_info.session_hdl =
 				session->session_hdl;
-			cam_req_mgr_destroy_session(&ses_info);
+			cam_req_mgr_destroy_session(&ses_info, true);
 		}
 	}
 }
@@ -2321,10 +2322,12 @@ static int __cam_req_mgr_unlink(struct cam_req_mgr_core_link *link)
 	link->state = CAM_CRM_LINK_STATE_IDLE;
 	spin_unlock_bh(&link->link_state_spin_lock);
 
-	rc = __cam_req_mgr_disconnect_link(link);
-	if (rc)
-		CAM_ERR(CAM_CORE,
-			"Unlink for all devices was not successful");
+	if (!link->is_shutdown) {
+		rc = __cam_req_mgr_disconnect_link(link);
+		if (rc)
+			CAM_ERR(CAM_CORE,
+				"Unlink for all devices was not successful");
+	}
 
 	mutex_lock(&link->lock);
 	/* Destroy timer of link */
@@ -2352,7 +2355,8 @@ static int __cam_req_mgr_unlink(struct cam_req_mgr_core_link *link)
 }
 
 int cam_req_mgr_destroy_session(
-		struct cam_req_mgr_session_info *ses_info)
+		struct cam_req_mgr_session_info *ses_info,
+		bool is_shutdown)
 {
 	int rc;
 	int i;
@@ -2385,6 +2389,7 @@ int cam_req_mgr_destroy_session(
 				continue;
 
 			/* Ignore return value since session is going away */
+			link->is_shutdown = is_shutdown;
 			__cam_req_mgr_unlink(link);
 			__cam_req_mgr_free_link(link);
 		}
