@@ -83,8 +83,8 @@ struct fpc1020_data {
 	struct pinctrl_state *pinctrl_state[ARRAY_SIZE(pctl_names)];
 	struct regulator *vreg[ARRAY_SIZE(vreg_conf)];
 
-	struct wakeup_source ttw_wl;
-	struct wakeup_source screen_wl;
+	struct wakeup_source *ttw_wl;
+	struct wakeup_source *screen_wl;
 	int irq_gpio;
 	int rst_gpio;
 	struct mutex lock; /* To set/get exported values in sysfs */
@@ -600,7 +600,7 @@ static irqreturn_t fpc1020_irq_handler(int irq, void *handle)
 	dev_dbg(fpc1020->dev, "%s\n", __func__);
 
 	if (atomic_read(&fpc1020->wakeup_enabled)) {
-		__pm_wakeup_event(&fpc1020->ttw_wl, FPC_TTW_HOLD_TIME);
+		__pm_wakeup_event(fpc1020->ttw_wl, FPC_TTW_HOLD_TIME);
 	}
 
 	sysfs_notify(&fpc1020->dev->kobj, NULL, dev_attr_irq.attr.name);
@@ -658,14 +658,14 @@ static int fpc_fb_notif_callback(struct notifier_block *nb,
 		case DRM_BLANK_POWERDOWN:
 			fpc1020->fb_black = true;
 #ifdef CONFIG_FINGERPRINT_FPC_SCREEN_NOTIFY
-			__pm_wakeup_event(&fpc1020->screen_wl, FPC_SCREEN_HOLD_TIME);
+			__pm_wakeup_event(fpc1020->screen_wl, FPC_SCREEN_HOLD_TIME);
 			sysfs_notify(&fpc1020->dev->kobj, NULL, dev_attr_screen_status.attr.name);
 #endif
 			break;
 		case DRM_BLANK_UNBLANK:
 			fpc1020->fb_black = false;
 #ifdef CONFIG_FINGERPRINT_FPC_SCREEN_NOTIFY
-			__pm_wakeup_event(&fpc1020->screen_wl, FPC_SCREEN_HOLD_TIME);
+			__pm_wakeup_event(fpc1020->screen_wl, FPC_SCREEN_HOLD_TIME);
 			sysfs_notify(&fpc1020->dev->kobj, NULL, dev_attr_screen_status.attr.name);
 #endif
 			break;
@@ -745,8 +745,8 @@ static int fpc1020_probe(struct platform_device *pdev)
 */
 	mutex_init(&fpc1020->lock);
 
-	wakeup_source_init(&fpc1020->ttw_wl, "fpc_ttw_wl");
-	wakeup_source_init(&fpc1020->screen_wl, "fpc_screen_wl");
+	fpc1020->ttw_wl = wakeup_source_register(NULL, "fpc_ttw_wl");
+	fpc1020->screen_wl = wakeup_source_register(NULL, "fpc_screen_wl");
 
 	rc = sysfs_create_group(&dev->kobj, &attribute_group);
 	if (rc) {
@@ -778,8 +778,8 @@ static int fpc1020_remove(struct platform_device *pdev)
 	drm_unregister_client(&fpc1020->fb_notifier);
 	sysfs_remove_group(&pdev->dev.kobj, &attribute_group);
 	mutex_destroy(&fpc1020->lock);
-	wakeup_source_trash(&fpc1020->ttw_wl);
-	wakeup_source_trash(&fpc1020->screen_wl);
+	wakeup_source_unregister(fpc1020->ttw_wl);
+	wakeup_source_unregister(fpc1020->screen_wl);
 	(void)vreg_setup(fpc1020, "vdd_ana", false);
     /*
 	(void)vreg_setup(fpc1020, "vdd_io", false);
