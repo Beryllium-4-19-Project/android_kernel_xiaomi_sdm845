@@ -493,10 +493,9 @@
 
 };
 
-/* Need to fix pmi8998_pwm_1 first
 &qupv3_se10_i2c {
 	status = "ok";
-
+	/* Need to fix pmi8998_pwm_1 first
 	lm3644@63 {
 		compatible = "leds-lm3644";
 		reg = <0x63>;
@@ -513,8 +512,8 @@
 		lm3644,period-us = <25000>;
 		lm3644,duty-us = <2500>;
 	};
+	*/
 };
-*/
 
 &qupv3_se14_i2c {
 	status = "ok";
