@@ -2036,6 +2036,7 @@ int32_t cam_icp_hw_mgr_cb(uint32_t irq_status, void *data)
 static void cam_icp_free_hfi_mem(void)
 {
 	int rc;
+
 	cam_smmu_dealloc_firmware(icp_hw_mgr.iommu_hdl);
 	rc = cam_mem_mgr_free_memory_region(&icp_hw_mgr.hfi_mem.sec_heap);
 	if (rc)
@@ -3370,6 +3371,7 @@ static int cam_icp_mgr_process_cmd_desc(struct cam_icp_hw_mgr *hw_mgr,
 {
 	int rc = 0;
 	int i, j, k;
+	int num_cmd_buf = 0;
 	dma_addr_t addr;
 	size_t len;
 	struct cam_cmd_buf_desc *cmd_desc = NULL;
@@ -3383,32 +3385,56 @@ static int cam_icp_mgr_process_cmd_desc(struct cam_icp_hw_mgr *hw_mgr,
 		((uint32_t *) &packet->payload + packet->cmd_buf_offset/4);
 
 	*fw_cmd_buf_iova_addr = 0;
-	for (i = 0; i < packet->num_cmd_buf; i++) {
+	for (i = 0; i < packet->num_cmd_buf; i++, num_cmd_buf++) {
 		if (cmd_desc[i].type == CAM_CMD_BUF_FW) {
 			rc = cam_mem_get_io_buf(cmd_desc[i].mem_handle,
 				hw_mgr->iommu_hdl, &addr, &len);
 			if (rc) {
 				CAM_ERR(CAM_ICP, "get cmd buf failed %x",
 					hw_mgr->iommu_hdl);
+
+				if (num_cmd_buf > 0)
+					num_cmd_buf--;
 				return rc;
 			}
 			*fw_cmd_buf_iova_addr = addr;
+
+			if ((cmd_desc[i].offset >= len) ||
+				((len - cmd_desc[i].offset) <
+				cmd_desc[i].size)){
+				CAM_ERR(CAM_ICP,
+					"Invalid offset, i: %d offset: %u len: %zu size: %zu",
+					i, cmd_desc[i].offset,
+					len, cmd_desc[i].size);
+				return -EINVAL;
+			}
+
 			*fw_cmd_buf_iova_addr =
 				(*fw_cmd_buf_iova_addr + cmd_desc[i].offset);
 			rc = cam_mem_get_cpu_buf(cmd_desc[i].mem_handle,
 				&cpu_addr, &len);
-			if (rc) {
+			if (rc || !cpu_addr) {
 				CAM_ERR(CAM_ICP, "get cmd buf failed %x",
 					hw_mgr->iommu_hdl);
 				*fw_cmd_buf_iova_addr = 0;
+
+				if (num_cmd_buf > 0)
+					num_cmd_buf--;
 				return rc;
+			}
+			if ((len <= cmd_desc[i].offset) ||
+				(cmd_desc[i].size < cmd_desc[i].length) ||
+				((len - cmd_desc[i].offset) <
+				cmd_desc[i].length)) {
+				CAM_ERR(CAM_ICP, "Invalid offset or length");
+				return -EINVAL;
 			}
 			cpu_addr = cpu_addr + cmd_desc[i].offset;
 		}
 	}
 
 	if (!cpu_addr) {
-		CAM_ERR(CAM_ICP, "Invalid cpu addr");
+		CAM_ERR(CAM_ICP, "invalid number of cmd buf");
 		return -EINVAL;
 	}
 

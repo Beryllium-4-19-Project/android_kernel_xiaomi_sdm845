@@ -1,18 +1,10 @@
-/* Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/module.h>
 #include <linux/dma-buf.h>
-#include <asm/dma-iommu.h>
 #include <linux/dma-direction.h>
 #include <linux/of_platform.h>
 #include <linux/iommu.h>
@@ -26,7 +18,7 @@
 
 #include <soc/qcom/scm.h>
 #include <soc/qcom/secure_buffer.h>
-#include <uapi/media/cam_req_mgr.h>
+#include <media/cam_req_mgr.h>
 #include "cam_smmu_api.h"
 #include "cam_debug_util.h"
 
@@ -293,9 +285,8 @@ static void cam_smmu_page_fault_work(struct work_struct *work)
 	/* Dereference the payload to call the handler */
 	idx = payload->idx;
 	buf_info = cam_smmu_find_closest_mapping(idx, (void *)payload->iova);
-	if (buf_info != 0) {
+	if (buf_info != 0)
 		CAM_INFO(CAM_SMMU, "closest buf 0x%x idx %d", buf_info, idx);
-	}
 
 	for (j = 0; j < CAM_SMMU_CB_MAX; j++) {
 		if ((iommu_cb_set.cb_info[idx].handler[j])) {
@@ -308,6 +299,7 @@ static void cam_smmu_page_fault_work(struct work_struct *work)
 				buf_info);
 		}
 	}
+	cam_smmu_dump_cb_info(idx);
 	kfree(payload);
 }
 
@@ -2477,7 +2469,7 @@ static int cam_smmu_map_stage2_buffer_and_add_to_list(int idx, int ion_fd,
 			"Error: dma buf get failed, idx=%d, ion_fd=%d",
 			idx, ion_fd);
 		rc = PTR_ERR(dmabuf);
-		goto err_put;
+		goto err_out;
 	}
 
 	/*
@@ -2491,7 +2483,7 @@ static int cam_smmu_map_stage2_buffer_and_add_to_list(int idx, int ion_fd,
 			"Error: dma buf attach failed, idx=%d, ion_fd=%d",
 			idx, ion_fd);
 		rc = PTR_ERR(attach);
-		goto err_out;
+		goto err_put;
 	}
 
 	attach->dma_map_attrs |= DMA_ATTR_SKIP_CPU_SYNC;
@@ -3694,7 +3686,7 @@ static int cam_populate_smmu_context_banks(struct device *dev,
 	}
 
 	dma_set_max_seg_size(dev, DMA_BIT_MASK(32));
-	dma_set_seg_boundary(dev, DMA_BIT_MASK(64));
+	dma_set_seg_boundary(dev, (unsigned long)DMA_BIT_MASK(64));
 
 end:
 	/* increment count to next bank */

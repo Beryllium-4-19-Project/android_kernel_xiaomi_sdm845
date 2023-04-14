@@ -165,6 +165,7 @@ int32_t cam_cmd_buf_parser(struct csiphy_device *csiphy_dev,
 {
 	int32_t                 rc = 0;
 	uintptr_t                generic_ptr;
+	uintptr_t                generic_pkt_ptr;
 	struct cam_packet       *csl_packet = NULL;
 	struct cam_cmd_buf_desc *cmd_desc = NULL;
 	uint32_t                *cmd_buf = NULL;
@@ -178,7 +179,7 @@ int32_t cam_cmd_buf_parser(struct csiphy_device *csiphy_dev,
 	}
 
 	rc = cam_mem_get_cpu_buf((int32_t) cfg_dev->packet_handle,
-		&generic_ptr, &len);
+		&generic_pkt_ptr, &len);
 	if (rc < 0) {
 		CAM_ERR(CAM_CSIPHY, "Failed to get packet Mem address: %d", rc);
 		return rc;
@@ -195,7 +196,7 @@ int32_t cam_cmd_buf_parser(struct csiphy_device *csiphy_dev,
 
 	remain_len -= (size_t)cfg_dev->offset;
 	csl_packet = (struct cam_packet *)
-		(generic_ptr + (uint32_t)cfg_dev->offset);
+		(generic_pkt_ptr + (uint32_t)cfg_dev->offset);
 
 	if (cam_packet_util_validate_packet(csl_packet,
 		remain_len)) {

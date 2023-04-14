@@ -2112,8 +2112,7 @@ static int __cam_isp_ctx_config_dev_in_top_state(
 
 	if (!req) {
 		CAM_ERR(CAM_ISP, "No more request obj free");
-		rc = -ENOMEM;
-		goto end;
+		return -ENOMEM;
 	}
 
 	req_isp = (struct cam_isp_ctx_req *) req->req_priv;
@@ -2234,8 +2233,7 @@ static int __cam_isp_ctx_config_dev_in_top_state(
 
 put_ref:
 	for (--i; i >= 0; i--) {
-		rc = cam_sync_put_obj_ref(req_isp->fence_map_out[i].sync_id);
-		if (rc)
+		if (cam_sync_put_obj_ref(req_isp->fence_map_out[i].sync_id))
 			CAM_ERR(CAM_CTXT, "Failed to put ref of fence %d",
 				req_isp->fence_map_out[i].sync_id);
 	}
@@ -2243,7 +2241,7 @@ free_req:
 	spin_lock_bh(&ctx->lock);
 	list_add_tail(&req->list, &ctx->free_req_list);
 	spin_unlock_bh(&ctx->lock);
-end:
+
 	return rc;
 }
 

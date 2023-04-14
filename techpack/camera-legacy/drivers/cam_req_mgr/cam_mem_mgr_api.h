@@ -83,8 +83,10 @@ int cam_mem_mgr_release_mem(struct cam_mem_mgr_memory_desc *inp);
  */
 int cam_mem_get_io_buf(int32_t buf_handle, int32_t mmu_handle,
 	dma_addr_t *iova_ptr, size_t *len_ptr);
+
 /**
- * @brief: Returns CPU address information about buffer
+ * @brief: This indicates begin of CPU access.
+ *         Also returns CPU address information about DMA buffer
  *
  * @buf_handle: Handle for the buffer
  * @vaddr_ptr : pointer to kernel virtual address

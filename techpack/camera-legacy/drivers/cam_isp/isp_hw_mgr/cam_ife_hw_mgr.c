@@ -1560,14 +1560,6 @@ static int cam_ife_mgr_acquire_hw(void *hw_mgr_priv,
 			isp_resource[i].res_hdl,
 			isp_resource[i].length);
 
-		in_port_length = sizeof(struct cam_isp_in_port_info);
-
-		if (in_port_length > isp_resource[i].length) {
-			CAM_ERR(CAM_ISP, "buffer size is not enough");
-			rc = -EINVAL;
-			goto free_res;
-		}
-
 		in_port = memdup_user(
 			u64_to_user_ptr(isp_resource[i].res_hdl),
 			isp_resource[i].length);

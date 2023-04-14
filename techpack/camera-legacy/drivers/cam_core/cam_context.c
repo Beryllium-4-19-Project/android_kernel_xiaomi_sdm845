@@ -247,6 +247,7 @@ int cam_context_dump_pf_info(struct cam_context *ctx, unsigned long iova,
 		return -EINVAL;
 	}
 
+	mutex_lock(&ctx->ctx_mutex);
 	if ((ctx->state > CAM_CTX_AVAILABLE) &&
 		(ctx->state < CAM_CTX_STATE_MAX)) {
 		if (ctx->state_machine[ctx->state].pagefault_ops) {
@@ -257,6 +258,7 @@ int cam_context_dump_pf_info(struct cam_context *ctx, unsigned long iova,
 				ctx->dev_hdl, ctx->state);
 		}
 	}
+	mutex_unlock(&ctx->ctx_mutex);
 
 	return rc;
 }

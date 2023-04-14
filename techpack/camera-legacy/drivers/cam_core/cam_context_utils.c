@@ -280,15 +280,13 @@ int32_t cam_context_prepare_dev_to_hw(struct cam_context *ctx,
 
 	if (!ctx || !cmd) {
 		CAM_ERR(CAM_CTXT, "Invalid input params %pK %pK", ctx, cmd);
-		rc = -EINVAL;
-		goto end;
+		return -EINVAL;
 	}
 
 	if (!ctx->hw_mgr_intf) {
 		CAM_ERR(CAM_CTXT, "[%s][%d] HW interface is not ready",
 			ctx->dev_name, ctx->ctx_id);
-		rc = -EFAULT;
-		goto end;
+		return -EFAULT;
 	}
 	rc = cam_context_validate_thread();
 	if (rc)
@@ -305,8 +303,7 @@ int32_t cam_context_prepare_dev_to_hw(struct cam_context *ctx,
 	if (!req) {
 		CAM_ERR(CAM_CTXT, "[%s][%d] No more request obj free",
 			ctx->dev_name, ctx->ctx_id);
-		rc = -ENOMEM;
-		goto end;
+		return -ENOMEM;
 	}
 
 	memset(req, 0, sizeof(*req));
@@ -424,7 +421,6 @@ int32_t cam_context_prepare_dev_to_hw(struct cam_context *ctx,
 			CAM_DBG(CAM_CTXT, "register in fence cb: %d ret = %d",
 				req->in_map_entries[j].sync_id, rc);
 		}
-		goto end;
 	}
 
 	return rc;
@@ -441,7 +437,7 @@ free_req:
 	list_add_tail(&req->list, &ctx->free_req_list);
 	req->ctx = NULL;
 	spin_unlock(&ctx->lock);
-end:
+
 	return rc;
 }
 

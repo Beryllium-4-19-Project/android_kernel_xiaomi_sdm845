@@ -872,6 +872,7 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 	uint32_t *offset = NULL;
 	uint32_t *cmd_buf = NULL;
 	uintptr_t generic_ptr;
+	uintptr_t generic_pkt_ptr;
 	struct common_header      *cmm_hdr = NULL;
 	struct cam_control        *ioctl_ctrl = NULL;
 	struct cam_packet         *csl_packet = NULL;
@@ -904,7 +905,7 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 		sizeof(config)))
 		return -EFAULT;
 	rc = cam_mem_get_cpu_buf(config.packet_handle,
-		&generic_ptr, &len_of_buff);
+		&generic_pkt_ptr, &len_of_buff);
 	if (rc < 0) {
 		CAM_ERR(CAM_ACTUATOR, "Error in converting command Handle %d",
 			rc);
@@ -923,7 +924,7 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 
 	remain_len -= (size_t)config.offset;
 	csl_packet = (struct cam_packet *)
-			(generic_ptr + (uint32_t)config.offset);
+			(generic_pkt_ptr + (uint32_t)config.offset);
 
 	if (cam_packet_util_validate_packet(csl_packet,
 		remain_len)) {

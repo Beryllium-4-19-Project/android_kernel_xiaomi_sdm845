@@ -132,7 +132,7 @@ static int cam_isp_dev_probe(struct platform_device *pdev)
 	int iommu_hdl = -1;
 
 	g_isp_dev.sd.internal_ops = &cam_isp_subdev_internal_ops;
-	/* Initialze the v4l2 subdevice first. (create cam_node) */
+	/* Initialize the v4l2 subdevice first. (create cam_node) */
 	rc = cam_subdev_probe(&g_isp_dev.sd, pdev, CAM_ISP_DEV_NAME,
 		CAM_IFE_DEVICE_TYPE);
 	if (rc) {
