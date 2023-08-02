@@ -1,0 +1,13 @@
+obj-$(CONFIG_LEGACY_CAMERA) += cam_req_mgr/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_utils/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_core/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_sync/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_smmu/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_cpas/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_cdm/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_isp/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_sensor_module/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_icp/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_jpeg/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_fd/
+obj-$(CONFIG_LEGACY_CAMERA) += cam_lrme/
