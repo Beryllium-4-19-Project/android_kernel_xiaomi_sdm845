@@ -1219,9 +1219,10 @@ static int __cam_req_mgr_process_sof_freeze(void *priv, void *data)
  * @data  : timer pointer
  *
  */
-static void __cam_req_mgr_sof_freeze(unsigned long data)
+static void __cam_req_mgr_sof_freeze(struct timer_list *timer_data)
 {
-	struct cam_req_mgr_timer     *timer = (struct cam_req_mgr_timer *)data;
+	struct cam_req_mgr_timer     *timer =
+		container_of(timer_data, struct cam_req_mgr_timer, sys_timer);
 	struct crm_workq_task               *task = NULL;
 	struct cam_req_mgr_core_link        *link = NULL;
 	struct crm_task_payload             *task_data;
