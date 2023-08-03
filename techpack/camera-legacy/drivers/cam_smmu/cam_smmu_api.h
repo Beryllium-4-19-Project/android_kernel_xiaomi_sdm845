@@ -16,6 +16,7 @@
 #include <linux/dma-direction.h>
 #include <linux/module.h>
 #include <linux/dma-buf.h>
+#include <asm/dma-iommu.h>
 #include <linux/dma-direction.h>
 #include <linux/of_platform.h>
 #include <linux/iommu.h>
@@ -268,6 +269,7 @@ int cam_smmu_get_iova(int handle, int ion_fd,
  */
 int cam_smmu_get_stage2_iova(int handle, int ion_fd,
 	dma_addr_t *paddr_ptr, size_t *len_ptr);
+
 /**
  * @brief Unmaps memory from context bank
  *
@@ -284,15 +286,14 @@ int cam_smmu_put_iova(int handle, int ion_fd);
  * @param handle: SMMU handle identifying secure context bank
  * @param ion_fd: ION fd to map securely
  * @param dir: DMA Direction for the mapping
- * @param client: Ion client passed by caller
  * @param dma_addr: Returned IOVA address after mapping
  * @param len_ptr: Length of memory mapped
  *
  * @return Status of operation. Negative in case of error. Zero otherwise.
  */
 int cam_smmu_map_stage2_iova(int handle,
-	int ion_fd, enum cam_smmu_map_dir dir, struct ion_client *client,
-	ion_phys_addr_t *dma_addr, size_t *len_ptr);
+	int ion_fd, enum cam_smmu_map_dir dir, dma_addr_t *dma_addr,
+	size_t *len_ptr);
 
 /**
  * @brief Unmaps secure memopry for SMMU handle
@@ -303,7 +304,6 @@ int cam_smmu_map_stage2_iova(int handle,
  * @return Status of operation. Negative in case of error. Zero otherwise.
  */
 int cam_smmu_unmap_stage2_iova(int handle, int ion_fd);
-
 
 /**
  * @brief Allocates firmware for context bank
