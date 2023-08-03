@@ -134,7 +134,7 @@ static int32_t cam_spi_tx_helper(struct camera_io_master *client,
 	} else {
 		txr = PAGE_ALIGN(len) >> PAGE_SHIFT;
 		page_tx = cma_alloc(dev_get_cma_area(dev),
-			txr, 0);
+			txr, 0, GFP_KERNEL);
 		if (!page_tx)
 			return -ENOMEM;
 
@@ -147,7 +147,7 @@ static int32_t cam_spi_tx_helper(struct camera_io_master *client,
 		} else {
 			rxr = PAGE_ALIGN(len) >> PAGE_SHIFT;
 			page_rx = cma_alloc(dev_get_cma_area(dev),
-				rxr, 0);
+				rxr, 0, GFP_KERNEL);
 			if (!page_rx) {
 				if (!tx)
 					cma_release(dev_get_cma_area(dev),
