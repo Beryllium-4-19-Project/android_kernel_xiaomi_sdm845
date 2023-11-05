@@ -57,7 +57,10 @@
 			17000 15500 30000 8000 3000>;
 		qcom,mdss-dsi-panel-peak-brightness = <4200000>;
 		qcom,mdss-dsi-panel-blackness-level = <3230>;
-		qcom,mdss-dsi-qsync-min-refresh-rate = <60>;
+		qcom,mdss-dsi-pan-enable-dynamic-fps;
+		qcom,mdss-dsi-pan-fps-update =
+			"dfps_immediate_porch_mode_vfp";
+		qcom,dsi-supported-dfps-list = <60 50 48 30>;
 
 		qcom,esd-err-irq-gpio = <&tlmm 10 0x2001>; /* trig-flags: falling-0x0002 rasing-0x0001*/
 
