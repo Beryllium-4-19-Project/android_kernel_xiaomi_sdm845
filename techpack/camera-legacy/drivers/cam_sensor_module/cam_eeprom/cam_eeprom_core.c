@@ -20,6 +20,11 @@
 #include "cam_common_util.h"
 #include "cam_packet_util.h"
 
+#ifdef CONFIG_USE_ROHM_BU64753
+uint8_t g_eeprom_mapdata[EEPROM_MAP_DATA_CNT] = {0};
+EXPORT_SYMBOL(g_eeprom_mapdata);
+#endif
+
 /**
  * cam_eeprom_read_memory() - read map data into buffer
  * @e_ctrl:     eeprom control struct
@@ -65,6 +70,7 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 			i2c_reg_settings.addr_type = emap[j].page.addr_type;
 			i2c_reg_settings.data_type = emap[j].page.data_type;
 			i2c_reg_settings.size = 1;
+			i2c_reg_settings.delay = emap[j].page.delay;
 			i2c_reg_array.reg_addr = emap[j].page.addr;
 			i2c_reg_array.reg_data = emap[j].page.data;
 			i2c_reg_array.delay = emap[j].page.delay;
@@ -108,6 +114,9 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 			}
 		}
 
+		if (emap[j].delay.valid_size)
+			msleep(emap[j].delay.delay);
+
 		if (emap[j].mem.valid_size) {
 			rc = camera_io_dev_read_seq(&e_ctrl->io_master_info,
 				emap[j].mem.addr, memptr,
@@ -119,6 +128,17 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 					rc);
 				return rc;
 			}
+
+#ifdef CONFIG_USE_ROHM_BU64753
+			if ((memptr != NULL) &&
+				(memptr[1] == LITEON_VENDOR_ID) &&
+				(emap[j].saddr == BACK_CAMERA_LILTEON_EEPROM_ADDR) &&
+				(emap[j].mem.valid_size >= (EEPROM_READ_START_INDEX + EEPROM_MAP_DATA_CNT))) {
+				memset(g_eeprom_mapdata, 0, ARRAY_SIZE(g_eeprom_mapdata));
+				memcpy(g_eeprom_mapdata, memptr+EEPROM_READ_START_INDEX, EEPROM_MAP_DATA_CNT);
+			}
+#endif
+
 			memptr += emap[j].mem.valid_size;
 		}
 
@@ -900,7 +920,7 @@ error:
 	vfree(e_ctrl->cal_data.map);
 	e_ctrl->cal_data.num_data = 0;
 	e_ctrl->cal_data.num_map = 0;
-	e_ctrl->cam_eeprom_state = CAM_EEPROM_INIT;
+	e_ctrl->cam_eeprom_state = CAM_EEPROM_ACQUIRE;
 	return rc;
 }
 

@@ -1,4 +1,5 @@
 ccflags-y += -I$(srctree)/techpack/camera-legacy/drivers/cam_core/
+ccflags-y += -I$(srctree)/techpack/camera-legacy/drivers/cam_req_mgr
 ccflags-y += -I$(srctree)/techpack/camera-legacy/drivers/cam_smmu/
 ccflags-y += -I$(srctree)/techpack/camera-legacy/drivers/cam_utils
 

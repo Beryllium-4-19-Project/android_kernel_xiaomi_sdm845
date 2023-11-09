@@ -9,3 +9,4 @@ obj-$(CONFIG_LEGACY_CAMERA) += cam_flash/
 obj-$(CONFIG_LEGACY_CAMERA) += cam_eeprom/
 obj-$(CONFIG_LEGACY_CAMERA) += cam_ois/
 obj-$(CONFIG_LEGACY_CAMERA) += cam_ir_led/
+obj-$(CONFIG_LEGACY_CAMERA) += 3dsl_eeprom/
