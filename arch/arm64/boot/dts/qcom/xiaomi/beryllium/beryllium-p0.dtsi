@@ -504,7 +504,6 @@
 
 &qupv3_se10_i2c {
 	status = "ok";
-	/* Need to fix pmi8998_pwm_1 first
 	lm3644@63 {
 		compatible = "leds-lm3644";
 		reg = <0x63>;
@@ -517,11 +516,10 @@
 		pinctrl-2 = <&lm3644_led_suspend &lm3644_pwm_disabled>;
 
 		lm3644,use-simulative-pwm;
-		pwms = <&pmi8998_pwm_1 0 0>;
+		pwms = <&pmi8998_lpg 0 0>; // FIXME: Recheck, should be like pwms = <&pmi8998_lpg 1 25000>;
 		lm3644,period-us = <25000>;
 		lm3644,duty-us = <2500>;
 	};
-	*/
 };
 
 
