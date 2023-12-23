@@ -78,8 +78,6 @@
  * @dbg_q: Memory info of debug queue
  * @sec_heap: Memory info of secondary heap
  * @fw_buf: Memory info of firmware
- * @shmem: Memory info for shared region
- * @io_mem: Memory info for io region
  */
 struct icp_hfi_mem_info {
 	struct cam_mem_mgr_memory_desc qtbl;
@@ -89,7 +87,6 @@ struct icp_hfi_mem_info {
 	struct cam_mem_mgr_memory_desc sec_heap;
 	struct cam_mem_mgr_memory_desc fw_buf;
 	struct cam_smmu_region_info shmem;
-	struct cam_smmu_region_info io_mem;
 };
 
 /**

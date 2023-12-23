@@ -1,6 +1,13 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 #include <linux/module.h>
@@ -832,8 +839,7 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 	size_t   len_of_buff = 0;
 	uint32_t *offset = NULL;
 	uint32_t *cmd_buf = NULL;
-	uintptr_t generic_ptr;
-	uintptr_t generic_pkt_ptr;
+	uint64_t generic_ptr;
 	struct common_header      *cmm_hdr = NULL;
 	struct cam_control        *ioctl_ctrl = NULL;
 	struct cam_packet         *csl_packet = NULL;
@@ -861,12 +867,11 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 	power_info = &soc_private->power_info;
 
 	ioctl_ctrl = (struct cam_control *)arg;
-	if (copy_from_user(&config,
-		u64_to_user_ptr(ioctl_ctrl->handle),
+	if (copy_from_user(&config, (void __user *) ioctl_ctrl->handle,
 		sizeof(config)))
 		return -EFAULT;
 	rc = cam_mem_get_cpu_buf(config.packet_handle,
-		&generic_pkt_ptr, &len_of_buff);
+		(uint64_t *)&generic_ptr, &len_of_buff);
 	if (rc < 0) {
 		CAM_ERR(CAM_ACTUATOR, "Error in converting command Handle %d",
 			rc);
@@ -880,8 +885,7 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 		return -EINVAL;
 	}
 
-	csl_packet = (struct cam_packet *)
-			(generic_pkt_ptr + (uint32_t)config.offset);
+	csl_packet = (struct cam_packet *)(generic_ptr + config.offset);
 	CAM_DBG(CAM_ACTUATOR, "Pkt opcode: %d", csl_packet->header.op_code);
 
 	switch (csl_packet->header.op_code & 0xFFFFFF) {
@@ -896,7 +900,7 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 			if (!total_cmd_buf_in_bytes)
 				continue;
 			rc = cam_mem_get_cpu_buf(cmd_desc[i].mem_handle,
-					&generic_ptr, &len_of_buff);
+					(uint64_t *)&generic_ptr, &len_of_buff);
 			if (rc < 0) {
 				CAM_ERR(CAM_ACTUATOR, "Failed to get cpu buf");
 				return rc;
@@ -1146,7 +1150,7 @@ int32_t cam_actuator_driver_cmd(struct cam_actuator_ctrl_t *a_ctrl,
 			goto release_mutex;
 		}
 		rc = copy_from_user(&actuator_acq_dev,
-			u64_to_user_ptr(cmd->handle),
+			(void __user *) cmd->handle,
 			sizeof(actuator_acq_dev));
 		if (rc < 0) {
 			CAM_ERR(CAM_ACTUATOR, "Failed Copying from user\n");
@@ -1167,8 +1171,7 @@ int32_t cam_actuator_driver_cmd(struct cam_actuator_ctrl_t *a_ctrl,
 
 		CAM_DBG(CAM_ACTUATOR, "Device Handle: %d",
 			actuator_acq_dev.device_handle);
-		if (copy_to_user(u64_to_user_ptr(cmd->handle),
-			&actuator_acq_dev,
+		if (copy_to_user((void __user *) cmd->handle, &actuator_acq_dev,
 			sizeof(struct cam_sensor_acquire_dev))) {
 			CAM_ERR(CAM_ACTUATOR, "Failed Copy to User");
 			rc = -EFAULT;
@@ -1215,8 +1218,7 @@ int32_t cam_actuator_driver_cmd(struct cam_actuator_ctrl_t *a_ctrl,
 		struct cam_actuator_query_cap actuator_cap = {0};
 
 		actuator_cap.slot_info = a_ctrl->soc_info.index;
-		if (copy_to_user(u64_to_user_ptr(cmd->handle),
-			&actuator_cap,
+		if (copy_to_user((void __user *) cmd->handle, &actuator_cap,
 			sizeof(struct cam_actuator_query_cap))) {
 			CAM_ERR(CAM_ACTUATOR, "Failed Copy to User");
 			rc = -EFAULT;

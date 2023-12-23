@@ -1,6 +1,13 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+ * GNU General Public License for more details.
  */
 
 #include <linux/module.h>
@@ -182,7 +189,7 @@ static int32_t cam_sensor_i2c_pkt_parse(struct cam_sensor_ctrl_t *s_ctrl,
 	void *arg)
 {
 	int32_t rc = 0;
-	uintptr_t generic_ptr;
+	uint64_t generic_ptr;
 	struct cam_control *ioctl_ctrl = NULL;
 	struct cam_packet *csl_packet = NULL;
 	struct cam_cmd_buf_desc *cmd_desc = NULL;
@@ -199,14 +206,13 @@ static int32_t cam_sensor_i2c_pkt_parse(struct cam_sensor_ctrl_t *s_ctrl,
 		return -EINVAL;
 	}
 
-	if (copy_from_user(&config,
-		u64_to_user_ptr(ioctl_ctrl->handle),
+	if (copy_from_user(&config, (void __user *) ioctl_ctrl->handle,
 		sizeof(config)))
 		return -EFAULT;
 
 	rc = cam_mem_get_cpu_buf(
 		config.packet_handle,
-		&generic_ptr,
+		(uint64_t *)&generic_ptr,
 		&len_of_buff);
 	if (rc < 0) {
 		CAM_ERR(CAM_SENSOR, "Failed in getting the buffer: %d", rc);
@@ -214,8 +220,7 @@ static int32_t cam_sensor_i2c_pkt_parse(struct cam_sensor_ctrl_t *s_ctrl,
 	}
 
 	csl_packet = (struct cam_packet *)(generic_ptr +
-		(uint32_t)config.offset);
-
+		config.offset);
 	if (config.offset > len_of_buff) {
 		CAM_ERR(CAM_SENSOR,
 			"offset is out of bounds: off: %lld len: %zu",
@@ -482,16 +487,15 @@ int32_t cam_handle_cmd_buffers_for_probe(void *cmd_buf,
 int32_t cam_handle_mem_ptr(uint64_t handle, struct cam_sensor_ctrl_t *s_ctrl)
 {
 	int rc = 0, i;
+	void *packet = NULL, *cmd_buf1 = NULL;
 	uint32_t *cmd_buf;
 	void *ptr;
 	size_t len;
-	struct cam_packet *pkt = NULL;
-	struct cam_cmd_buf_desc *cmd_desc = NULL;
-	uintptr_t cmd_buf1 = 0;
-	uintptr_t packet = 0;
+	struct cam_packet *pkt;
+	struct cam_cmd_buf_desc *cmd_desc;
 
 	rc = cam_mem_get_cpu_buf(handle,
-		&packet, &len);
+		(uint64_t *)&packet, &len);
 	if (rc < 0) {
 		CAM_ERR(CAM_SENSOR, "Failed to get the command Buffer");
 		return -EINVAL;
@@ -512,7 +516,7 @@ int32_t cam_handle_mem_ptr(uint64_t handle, struct cam_sensor_ctrl_t *s_ctrl)
 		if (!(cmd_desc[i].length))
 			continue;
 		rc = cam_mem_get_cpu_buf(cmd_desc[i].mem_handle,
-			&cmd_buf1, &len);
+			(uint64_t *)&cmd_buf1, &len);
 		if (rc < 0) {
 			CAM_ERR(CAM_SENSOR,
 				"Failed to parse the command Buffer Header");
@@ -772,8 +776,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 			goto release_mutex;
 		}
 		rc = copy_from_user(&sensor_acq_dev,
-			u64_to_user_ptr(cmd->handle),
-			sizeof(sensor_acq_dev));
+			(void __user *) cmd->handle, sizeof(sensor_acq_dev));
 		if (rc < 0) {
 			CAM_ERR(CAM_SENSOR, "Failed Copying from user");
 			goto release_mutex;
@@ -795,8 +798,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 
 		CAM_DBG(CAM_SENSOR, "Device Handle: %d",
 			sensor_acq_dev.device_handle);
-		if (copy_to_user(u64_to_user_ptr(cmd->handle),
-			&sensor_acq_dev,
+		if (copy_to_user((void __user *) cmd->handle, &sensor_acq_dev,
 			sizeof(struct cam_sensor_acquire_dev))) {
 			CAM_ERR(CAM_SENSOR, "Failed Copy to User");
 			rc = -EFAULT;
@@ -860,8 +862,8 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 		struct  cam_sensor_query_cap sensor_cap;
 
 		cam_sensor_query_cap(s_ctrl, &sensor_cap);
-		if (copy_to_user(u64_to_user_ptr(cmd->handle),
-			&sensor_cap, sizeof(struct  cam_sensor_query_cap))) {
+		if (copy_to_user((void __user *) cmd->handle, &sensor_cap,
+			sizeof(struct  cam_sensor_query_cap))) {
 			CAM_ERR(CAM_SENSOR, "Failed Copy to User");
 			rc = -EFAULT;
 			goto release_mutex;
@@ -970,13 +972,13 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 		struct cam_sensor_i2c_reg_setting user_reg_setting;
 		struct cam_sensor_i2c_reg_array i2c_reg_setting[cmd->size];
 
-		rc = copy_from_user(&user_reg_setting, u64_to_user_ptr(cmd->handle), sizeof(user_reg_setting));
+		rc = copy_from_user(&user_reg_setting, (void __user *)cmd->handle, sizeof(user_reg_setting));
 		if (rc < 0) {
 			CAM_ERR(CAM_SENSOR, "Copy data from user space failed\n");
 			goto release_mutex;
 		}
 
-		rc = copy_from_user(i2c_reg_setting, u64_to_user_ptr(user_reg_setting.reg_setting), sizeof(i2c_reg_setting));
+		rc = copy_from_user(i2c_reg_setting, (void __user *)user_reg_setting.reg_setting, sizeof(i2c_reg_setting));
 		if (rc < 0) {
 			CAM_ERR(CAM_SENSOR, "Copy i2c setting from user space failed\n");
 			goto release_mutex;
@@ -990,7 +992,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 	}
 		break;
 	case CAM_IR_GET_POWER_STATE: {
-		if (copy_to_user(u64_to_user_ptr(cmd->handle), &s_ctrl->sensor_state, sizeof(s_ctrl->sensor_state))) {
+		if (copy_to_user((void __user *)cmd->handle, &s_ctrl->sensor_state, sizeof(s_ctrl->sensor_state))) {
 			CAM_ERR(CAM_SENSOR, "Copy state to user space failed\n");
 			rc = -EFAULT;
 		}
@@ -1027,7 +1029,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 		CAM_ERR(CAM_SENSOR, "CAM_IR_LUMA_READ=0x%x, expo=0x%x, gain=0x%x. \n",
 			CAM_IR_LUMA_READ, luma_data.expo, luma_data.gain);
 
-		if (copy_to_user(u64_to_user_ptr(cmd->handle), &luma_data, sizeof(luma_data)) || ret != 0) {
+		if (copy_to_user((void __user *)cmd->handle, &luma_data, sizeof(luma_data)) || ret != 0) {
 			CAM_ERR(CAM_SENSOR, "Copy state to user space failed\n");
 			rc = -EFAULT;
 		}
